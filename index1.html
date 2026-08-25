@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <!-- Collegamento al Manifest e supporto per App Android/Mobile -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1b365d">
+<link rel="apple-touch-icon" href="https://via.placeholder.com/192/1b365d/ffffff?text=SAL"><meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROGETTI & SAL 2026 - Dashboard</title>
+    <style>
+        /* STILI GRAFICI (CSS): Layout a schede per Progetti e Dettagli */
+        :root {
+            --primary-color: #1b365d;
+            --accent-color: #008080;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 650px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 22px;
+            text-align: center;
+            margin-top: 0;
+            border-bottom: 2px solid #eef2f5;
+            padding-bottom: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        /* SCHEDA DETTAGLI PROGETTO */
+        .project-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .project-card h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+
+        .badge-team {
+            display: inline-block;
+            background: #e2e8f0;
+            color: #475569;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-right: 5px;
+            margin-top: 5px;
+        }
+
+        /* BARRA DI AVANZAMENTO (SAL) */
+        .progress-container {
+            background-color: #e2e8f0;
+            border-radius: 6px;
+            height: 12px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            background-color: var(--accent-color);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .task-item {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+
+        /* TIMER SECTION */
+        .timer-section {
+            margin-top: 25px;
+            border-top: 2px dashed #eef2f5;
+            padding-top: 15px;
+        }
+
+        .timer-display {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px 0;
+            color: var(--primary-color);
+            font-family: monospace;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            background-color: #27ae60;
+            color: white;
+        }
+
+        button.stop { background-color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>PROGETTI & SAL 2026</h1>
+    
+    <!-- SELEZIONE PROGETTO -->
+    <div class="form-group">
+        <label for="projectSelect">Seleziona Progetto:</label>
+        <select id="projectSelect" onchange="updateProjectDetails()">
+            <!-- Le opzioni vengono caricate dinamicamente da JavaScript -->
+        </select>
+    </div>
+
+    <!-- AREA DETTAGLI DINAMICI DEL PROGETTO -->
+    <div id="projectDetails" class="project-card">
+        <!-- Contenuto generato via JavaScript -->
+    </div>
+
+    <!-- TRACCIAMENTO TEMPO SUL PROGETTO -->
+    <div class="timer-section">
+        <h3>Traccia Tempo di Lavoro</h3>
+        <div class="form-group">
+            <input type="text" id="taskName" placeholder="Descrizione dell'azione corrente...">
+        </div>
+        <div class="timer-display" id="display">00:00:00</div>
+        <button id="actionBtn" onclick="toggleTimer()">Avvia Sessione di Lavoro</button>
+    </div>
+</div>
+
+<script>
+    /* DATABASE PROGETTI (JavaScript Object): 
+       Qui puoi personalizzare obiettivi, team e task per ogni progetto del tuo file! */
+    const projectsData = {
+        "FOOD": {
+            objective: "Gestione fornitori Food e ottimizzazione listini 2026.",
+            team: ["Buyer Food", "Qualifica Fornitori", "PDS"],
+            tasks: [
+                { name: "Chiusura contratti fornitori prioritari", progress: 75 },
+                { name: "Verifica schede tecniche di prodotto", progress: 40 }
+            ]
+        },
+        "DashBoard FORNITORI": {
+            objective: "Monitoraggio della spesa aziendale e fornitori attivi.",
+            team: ["fzuppello@marr.it", "Team Controllo Gestione"],
+            tasks: [
+                { name: "Aggiornamento dati spesa MARR SPA", progress: 90 },
+                { name: "Analisi % sul totale acquisti", progress: 60 }
+            ]
+        },
+        "CONTRATTI": {
+            objective: "Rinnovo e monitoraggio dei contratti in scadenza 2026.",
+            team: ["Ufficio Legale", "Buyer AS", "Buyer PDS"],
+            tasks: [
+                { name: "Verifica contratti da chiudere (79 rimanenti)", progress: 72 },
+                { name: "Invio mail sollecito CGA/Antimafia", progress: 50 }
+            ]
+        },
+        "PIANO CANTIERI": {
+            objective: "Pianificazione e stato avanzamento dei cantieri 2026.",
+            team: ["Responsabile Cantieri", "Ufficio Tecnico"],
+            tasks: [
+                { name: "Verifica tempistiche di consegna", progress: 30 }
+            ]
+        }
+    };
+
+    // Riferimenti HTML
+    const projectSelect = document.getElementById('projectSelect');
+    const projectDetails = document.getElementById('projectDetails');
+
+    // Inizializzazione della pagina
+    document.addEventListener('DOMContentLoaded', () => {
+        populateSelectOptions();
+        updateProjectDetails();
+    });
+
+    // Popola il menù a tendina con i dati dei progetti
+    function populateSelectOptions() {
+        projectSelect.innerHTML = "";
+        for (let key in projectsData) {
+            let option = document.createElement('option');
+            option.value = key;
+            option.textContent = key;
+            projectSelect.appendChild(option);
+        }
+    }
+
+    // Aggiorna la vista dinamica quando si sceglie un progetto
+    function updateProjectDetails() {
+        const selectedKey = projectSelect.value;
+        const data = projectsData[selectedKey];
+
+        if (!data) return;
+
+        // Generazione del codice HTML per il team
+        const teamHTML = data.team.map(member => `<span class="badge-team">${member}</span>`).join('');
+
+        // Generazione del codice HTML per le task e i loro SAL
+        const tasksHTML = data.tasks.map(task => `
+            <div class="task-item">
+                <div style="display:flex; justify-content:space-between; font-weight:600;">
+                    <span>${task.name}</span>
+                    <span>${task.progress}%</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" style="width: ${task.progress}%;"></div>
+                </div>
+            </div>
+        `).join('');
+
+        // Inserimento del contenuto dinamico
+        projectDetails.innerHTML = `
+            <h2>${selectedKey}</h2>
+            <p><strong>Obiettivo:</strong> ${data.objective}</p>
+            <p><strong>Persone Coinvolte:</strong><br>${teamHTML}</p>
+            <hr style="border:0; border-top:1px solid #e2e8f0; margin:12px 0;">
+            <p><strong>Task & Avanzamento SAL:</strong></p>
+            ${tasksHTML}
+        `;
+    }
+
+    /* LOGICA TIMER TRACCIAMENTO */
+    let timerInterval = null;
+    let seconds = 0;
+    let isRunning = false;
+    const display = document.getElementById('display');
+    const actionBtn = document.getElementById('actionBtn');
+
+    function toggleTimer() {
+        if (!isRunning) {
+            isRunning = true;
+            actionBtn.textContent = "Ferma e Salva";
+            actionBtn.classList.add('stop');
+            timerInterval = setInterval(() => {
+                seconds++;
+                const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+                const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+                const secs = String(seconds % 60).padStart(2, '0');
+                display.textContent = `${hrs}:${mins}:${secs}`;
+            }, 1000);
+        } else {
+            clearInterval(timerInterval);
+            isRunning = false;
+            actionBtn.textContent = "Avvia Sessione di Lavoro";
+            actionBtn.classList.remove('stop');
+            alert(`Sessione salvata per il progetto "${projectSelect.value}": ${display.textContent}`);
+            seconds = 0;
+            display.textContent = "00:00:00";
+            document.getElementById('taskName').value = "";
+        }
+    }
+// Registrazione del Service Worker per abilitare l'installazione su Android
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('App pronta per l\'uso offline!', reg))
+      .catch(err => console.log('Errore Service Worker:', err));
+  });
+}</script>
+
+</body>
+</html>
